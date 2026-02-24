@@ -1,38 +1,114 @@
-.App {
-  text-align: center;
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
+body {
+  background: linear-gradient(135deg, #1f1c2c, #928dab);
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+/* Main container */
+.App {
+  padding: 40px 20px;
+  text-align: center;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* Header */
+.header h1 {
+  font-size: 2.8rem;
+  font-weight: 700;
+}
+
+.header p {
+  margin-top: 10px;
+  opacity: 0.8;
+  font-size: 1.1rem;
+}
+
+/* Buttons */
+.button-section {
+  margin: 40px 0;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 12px 28px;
+  border: none;
+  border-radius: 30px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s ease;
+  color: white;
+}
+
+.naukri {
+  background: #ff6a00;
+}
+
+.naukri:hover {
+  background: #ff8124;
+  transform: scale(1.05);
+}
+/* Indeed Button */
+.Indeed {
+  background: linear-gradient(135deg, #003a9b, #0057d9);
+  color: white;
+}
+
+.Indeed:hover {
+  background: linear-gradient(135deg, #0044b3, #1a73e8);
+  transform: scale(1.05);
+  box-shadow: 0 5px 15px rgba(0, 58, 155, 0.4);
+}
+
+/* Apna Button */
+.Apna {
+  background: linear-gradient(135deg, #6a11cb, #5cd72f);
+  color: white;
+}
+
+.Apna:hover {
+  background: linear-gradient(135deg, #7c2ae8, #88a81d);
+  transform: scale(1.05);
+  box-shadow: 0 5px 15px rgba(23, 166, 198, 0.4);
+} 
+.remote {
+  background: #00c6ff;
+}
+
+.remote:hover {
+  background: #00e1ff;
+  transform: scale(1.05);
+}
+
+/* Loading */
+.loading {
+  margin: 20px 0;
+  font-size: 1.2rem;
+}
+
+/* Job container */
+.jobs-container {
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+/* Footer */
+.footer {
+  margin-top: 60px;
+  opacity: 0.7;
+  font-size: 0.9rem;
 }

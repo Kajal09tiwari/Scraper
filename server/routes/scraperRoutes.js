@@ -8,5 +8,7 @@ router.get('/naukri', scraperController.scrapeNaukriJobs);
 
 // Add RemoteOK scraping route here
 router.get('/remoteok', scraperController.scrapeRemoteOKJobs);
+router.get('/indeed', scraperController.scrapeIndeedJobs);
+router.get('/apna', scraperController.scrapeApnaJobs);
 
 module.exports = router;
