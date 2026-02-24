@@ -1,37 +1,37 @@
 const axios = require('axios');
+const cheerio = require('cheerio');
 const Job = require('../models/Job');
 
 const scrapeRemoteOK = async () => {
-  console.log("🚀 Fetching RemoteOK API...");
-
   try {
-const response = await axios.get('https://remoteok.com/remote-dev-jobs.json', {      headers: {
-        'User-Agent':
-          'Mozilla/5.0'
-      }
+    console.log('🚀 Starting RemoteOK scraping...');
+    
+    const response = await axios.get('https://remoteok.io/remote-dev-jobs', {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      },
+      timeout: 15000
     });
 
-    const jobsData = response.data.slice(1);
+    const $ = cheerio.load(response.data);
+    const jobs = [];
 
-    const jobs = jobsData.map(job => ({
-      title: job.position || 'N/A',
-      company: job.company || 'N/A',
-      location: job.location || 'Remote',
-      link: job.url || '#',
-      source: 'RemoteOK'
-    }));
+    $('tr.job').each((_, elem) => {
+      jobs.push({
+        title: $(elem).find('td.position h2').text().trim() || 'N/A',
+        company: $(elem).find('td.company h3').text().trim() || 'N/A',
+        location: $(elem).find('.location').text().trim() || 'Remote',
+        link: 'https://remoteok.io' + ($(elem).attr('data-href') || ''),
+        source: 'RemoteOK'
+      });
+    });
 
-    console.log(`✅ Fetched ${jobs.length} jobs`);
-
-    if (jobs.length > 0) {
-      await Job.insertMany(jobs);
-      console.log("✅ Inserted into DB");
-    }
-
+    console.log(`✅ Scraped ${jobs.length} jobs`);
+    if (jobs.length > 0) await Job.insertMany(jobs);
+    
     return jobs;
-
-  } catch (error) {
-    console.error("❌ RemoteOK API Error:", error.message);
+  } catch (err) {
+    console.error('❌ RemoteOK Error:', err.message);
     return [];
   }
 };

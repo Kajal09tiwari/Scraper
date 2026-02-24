@@ -1,64 +1,47 @@
-const puppeteer = require('puppeteer');
+const axios = require('axios');
+const cheerio = require('cheerio');
 const Job = require('../models/Job');
 
 const scrapeApna = async () => {
-  let browser;
+  console.log('🚀 Starting Apna scraping...');
 
   try {
-    browser = await puppeteer.launch({
-      headless: "new",
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-gpu'
-      ]
+    const response = await axios.get('https://apna.co/jobs/software-developer-jobs', {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
+      },
+      timeout: 15000
     });
 
-    const page = await browser.newPage();
+    const $ = cheerio.load(response.data);
+    const jobs = [];
 
-    await page.goto(
-      'https://apna.co/jobs/software-developer-jobs',
-      {
-        waitUntil: 'networkidle2',
-        timeout: 60000
-      }
-    );
+    $('div[data-testid="job-card"]').each((_, elem) => {
+      const title = $(elem).find('h2').text().trim() || 'No Title';
+      const company = $(elem).find('p').text().trim() || 'N/A';
+      const link = $(elem).find('a').attr('href') || '#';
 
-    await page.waitForSelector('div[data-testid="job-card"]', {
-      timeout: 20000
-    });
-
-    const jobs = await page.evaluate(() => {
-      const jobNodes = document.querySelectorAll(
-        'div[data-testid="job-card"]'
-      );
-
-      return Array.from(jobNodes).map(el => ({
-        title: el.querySelector('h2')?.innerText || 'No Title',
-        company: el.querySelector('p')?.innerText || 'N/A',
-        link: el.querySelector('a')?.href || '#',
+      jobs.push({
+        title,
+        company,
         location: 'India',
+        link: link.startsWith('http') ? link : 'https://apna.co' + link,
         source: 'Apna'
-      }));
+      });
     });
 
-    console.log(`Scraped ${jobs.length} jobs from Apna`);
+    console.log(`✅ Scraped ${jobs.length} jobs from Apna`);
 
     if (jobs.length > 0) {
       await Job.insertMany(jobs);
-      console.log('Apna jobs inserted to DB');
+      console.log('✅ Apna jobs inserted to DB');
     }
 
     return jobs;
 
   } catch (error) {
-    console.error("Apna Scraping Error:", error.message);
-    return [];   // prevents server crash
-  } finally {
-    if (browser) {
-      await browser.close();
-    }
+    console.error('❌ Apna Scraping Error:', error.message);
+    return [];
   }
 };
 

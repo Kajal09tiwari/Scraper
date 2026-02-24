@@ -1,59 +1,34 @@
-const puppeteer = require('puppeteer');
+const axios = require('axios');
+const cheerio = require('cheerio');
 const Job = require('../models/Job');
 
 const scrapeIndeed = async () => {
-  let browser;
-
   console.log('🚀 Starting Indeed scraping...');
 
   try {
-    browser = await puppeteer.launch({
-      headless: "new",
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-gpu'
-      ]
+    const response = await axios.get('https://in.indeed.com/jobs?q=software+developer', {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
+      },
+      timeout: 15000
     });
 
-    const page = await browser.newPage();
+    const $ = cheerio.load(response.data);
+    const jobs = [];
 
-    await page.setUserAgent(
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
-      '(KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
-    );
+    $('div.job_seen_beacon').each((_, elem) => {
+      const title = $(elem).find('h2 span').text().trim() || 'No Title';
+      const company = $(elem).find('.companyName').text().trim() || 'N/A';
+      const location = $(elem).find('.companyLocation').text().trim() || 'N/A';
+      const link = $(elem).find('a').attr('href') || '#';
 
-    await page.goto(
-      'https://in.indeed.com/jobs?q=software+developer',
-      {
-        waitUntil: 'networkidle2',
-        timeout: 60000
-      }
-    );
-
-    await page.waitForSelector('.job_seen_beacon', {
-      timeout: 20000
-    });
-
-    const jobs = await page.evaluate(() => {
-      const jobNodes = document.querySelectorAll('.job_seen_beacon');
-
-      return Array.from(jobNodes).map(el => ({
-        title:
-          el.querySelector('h2 span')?.innerText || 'No Title',
-
-        company:
-          el.querySelector('.companyName')?.innerText || 'N/A',
-
-        location:
-          el.querySelector('.companyLocation')?.innerText || 'N/A',
-
-        link:
-          el.querySelector('a')?.href || '#',
-
+      jobs.push({
+        title,
+        company,
+        location,
+        link,
         source: 'Indeed'
-      }));
+      });
     });
 
     console.log(`✅ Scraped ${jobs.length} jobs from Indeed`);
@@ -68,11 +43,6 @@ const scrapeIndeed = async () => {
   } catch (error) {
     console.error('❌ Indeed Scraping Error:', error.message);
     return [];
-
-  } finally {
-    if (browser) {
-      await browser.close();
-    }
   }
 };
 

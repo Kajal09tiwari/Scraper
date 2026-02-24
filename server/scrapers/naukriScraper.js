@@ -1,48 +1,32 @@
-const puppeteer = require('puppeteer');
+const axios = require('axios');
+const cheerio = require('cheerio');
 const Job = require('../models/Job');
 
 const scrapeNaukri = async () => {
-  let browser;
-
   console.log('🚀 Starting Naukri scraping...');
 
   try {
-    browser = await puppeteer.launch({
-      headless: "new",
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-gpu'
-      ]
+    const response = await axios.get('https://www.naukri.com/software-jobs', {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
+      },
+      timeout: 15000
     });
 
-    const page = await browser.newPage();
+    const $ = cheerio.load(response.data);
+    const jobs = [];
 
-    await page.goto('https://www.naukri.com/software-jobs', {
-      waitUntil: 'networkidle2',
-      timeout: 60000
-    });
+    $('div.row2').each((_, elem) => {
+      const company = $(elem).find('.comp-name').text().trim() || 'N/A';
+      const link = $(elem).find('.comp-name').attr('href') || '#';
+      const title = $(elem).find('h2, .jobTitle').text().trim() || 'Software Job';
 
-    await page.waitForSelector('.row2', { timeout: 20000 });
-
-    const jobs = await page.evaluate(() => {
-      const jobNodes = document.querySelectorAll('.row2');
-
-      return Array.from(jobNodes).map(el => {
-        const company =
-          el.querySelector('.comp-name')?.innerText || 'N/A';
-
-        const link =
-          el.querySelector('.comp-name')?.href || '#';
-
-        return {
-          title: 'Software Job',
-          company,
-          location: 'India',
-          link,
-          source: 'Naukri',
-        };
+      jobs.push({
+        title,
+        company,
+        location: 'India',
+        link: link.startsWith('http') ? link : 'https://www.naukri.com' + link,
+        source: 'Naukri'
       });
     });
 
@@ -58,11 +42,6 @@ const scrapeNaukri = async () => {
   } catch (error) {
     console.error('❌ Naukri Scraping Error:', error.message);
     return [];
-
-  } finally {
-    if (browser) {
-      await browser.close();
-    }
   }
 };
 
