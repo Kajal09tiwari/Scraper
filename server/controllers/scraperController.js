@@ -1,37 +1,40 @@
-const scrapeNaukri = require('../scrapers/naukriScraper');
-const scrape = require('../scrapers/remoteOKScraper');
-const scrapeIndeed = require('../scrapers/indeedScraper');
-const scrapeApna = require('../scrapers/apnaScraper');
+const scrapeRemoteOK = require('../scrapers/scrapeRemoteOK');
+const scrapeNaukri = require('../scrapers/scrapeNaukri');
+const scrapeIndeed = require('../scrapers/scrapeIndeed');
+const scrapeApna = require('../scrapers/scrapeApna');
 
-exports.scrapeNaukriJobs = async (req, res) => {
-  const data = await scrapeNaukri();
-  res.json(data);
-};
-
-exports.scrapeJobs = async (req, res) => {
+exports.scrapeRemoteOKJobs = async (req, res) => {
   try {
     const jobs = await scrapeRemoteOK();
-    res.json({ success: true, jobs });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.json(jobs);
+  } catch (err) {
+    res.status(500).json({ message: "RemoteOK failed" });
   }
 };
 
+exports.scrapeNaukriJobs = async (req, res) => {
+  try {
+    const jobs = await scrapeNaukri();
+    res.json(jobs);
+  } catch (err) {
+    res.status(500).json({ message: "Naukri failed" });
+  }
+};
 
 exports.scrapeIndeedJobs = async (req, res) => {
   try {
     const jobs = await scrapeIndeed();
-    res.json({ success: true, jobs });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.json(jobs);
+  } catch (err) {
+    res.status(500).json({ message: "Indeed failed" });
   }
 };
 
 exports.scrapeApnaJobs = async (req, res) => {
   try {
     const jobs = await scrapeApna();
-    res.json({ success: true, jobs });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.json(jobs);
+  } catch (err) {
+    res.status(500).json({ message: "Apna failed" });
   }
 };
