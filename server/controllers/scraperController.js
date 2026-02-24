@@ -1,5 +1,5 @@
 const scrapeNaukri = require('../scrapers/naukriScraper');
-const scrapeRemoteOK = require('../scrapers/remoteOKScraper');
+const scrape = require('../scrapers/remoteOKScraper');
 const scrapeIndeed = require('../scrapers/indeedScraper');
 const scrapeApna = require('../scrapers/apnaScraper');
 
@@ -8,7 +8,7 @@ exports.scrapeNaukriJobs = async (req, res) => {
   res.json(data);
 };
 
-exports.scrapeRemoteOKJobs = async (req, res) => {
+exports.scrapeJobs = async (req, res) => {
   try {
     const jobs = await scrapeRemoteOK();
     res.json({ success: true, jobs });

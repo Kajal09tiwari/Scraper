@@ -41,7 +41,7 @@ function App() {
           Scrape Naukri
         </button>
 
-        <button className="btn remote" onClick={() => fetchJobs('RemoteOK')}>
+        <button className="btn remote" onClick={() => fetchJobs('remoteok')}>
           Scrape RemoteOK
         </button>
         <button className="btn Indeed" onClick={() => fetchJobs('indeed')}>

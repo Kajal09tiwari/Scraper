@@ -23,7 +23,10 @@ const scrapeRemoteOK = async () => {
     }));
 
     console.log(`✅ Fetched ${jobs.length} jobs`);
-
+    console.log("Response length:", response.data.length);
+    console.log("First job:", response.data[0]);
+    
+    
     if (jobs.length > 0) {
       await Job.insertMany(jobs);
     }
