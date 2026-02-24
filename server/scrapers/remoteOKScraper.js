@@ -5,9 +5,21 @@ const Job = require('../models/Job');
 puppeteer.use(StealthPlugin());
 
 const scrapeRemoteOK = async () => {
-  console.log('Starting RemoteOK scraping...');
+  let browser;
+
+  console.log('🚀 Starting RemoteOK scraping...');
+
   try {
-    const browser = await puppeteer.launch({ headless: true });
+    browser = await puppeteer.launch({
+      headless: "new",
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu'
+      ]
+    });
+
     const page = await browser.newPage();
 
     await page.setUserAgent(
@@ -20,11 +32,11 @@ const scrapeRemoteOK = async () => {
       timeout: 60000
     });
 
-    // Wait for jobs to load
-    await page.waitForSelector('tr.job');
+    await page.waitForSelector('tr.job', { timeout: 20000 });
 
     const jobs = await page.evaluate(() => {
       const jobRows = document.querySelectorAll('tr.job');
+
       return Array.from(jobRows).map(row => ({
         title: row.querySelector('td.position h2')?.innerText || 'N/A',
         company: row.querySelector('td.company h3')?.innerText || 'N/A',
@@ -35,16 +47,22 @@ const scrapeRemoteOK = async () => {
     });
 
     console.log(`✅ Scraped ${jobs.length} jobs from RemoteOK`);
+
     if (jobs.length > 0) {
       await Job.insertMany(jobs);
       console.log('✅ Jobs inserted to DB');
     }
 
-    await browser.close();
     return jobs;
+
   } catch (err) {
     console.error('❌ Error scraping RemoteOK:', err.message);
     return [];
+
+  } finally {
+    if (browser) {
+      await browser.close();
+    }
   }
 };
 

@@ -2,54 +2,78 @@ const puppeteer = require('puppeteer');
 const Job = require('../models/Job');
 
 const scrapeIndeed = async () => {
-  const browser = await puppeteer.launch({
-    headless: false,
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
-  });
+  let browser;
 
-  const page = await browser.newPage();
+  console.log('🚀 Starting Indeed scraping...');
 
-  await page.goto('https://in.indeed.com/jobs?q=software+developer', {
-    waitUntil: 'networkidle2',
-  });
-
-  await page.waitForSelector('.job_seen_beacon');
-
-  const jobs = await page.evaluate(() => {
-    const jobNodes = document.querySelectorAll('.job_seen_beacon');
-
-    return Array.from(jobNodes).map(el => {
-      const title =
-        el.querySelector('h2 span')?.innerText || 'No Title';
-
-      const company =
-        el.querySelector('.companyName')?.innerText || 'N/A';
-
-      const location =
-        el.querySelector('.companyLocation')?.innerText || 'N/A';
-
-      const link =
-        el.querySelector('a')?.href || '#';
-
-      return {
-        title,
-        company,
-        location,
-        link,
-        source: 'Indeed',
-      };
+  try {
+    browser = await puppeteer.launch({
+      headless: "new",
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu'
+      ]
     });
-  });
 
-  console.log(`Scraped ${jobs.length} jobs from Indeed`);
+    const page = await browser.newPage();
 
-  if (jobs.length > 0) {
-    await Job.insertMany(jobs);
-    console.log('Indeed jobs inserted to DB');
+    await page.setUserAgent(
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
+      '(KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
+    );
+
+    await page.goto(
+      'https://in.indeed.com/jobs?q=software+developer',
+      {
+        waitUntil: 'networkidle2',
+        timeout: 60000
+      }
+    );
+
+    await page.waitForSelector('.job_seen_beacon', {
+      timeout: 20000
+    });
+
+    const jobs = await page.evaluate(() => {
+      const jobNodes = document.querySelectorAll('.job_seen_beacon');
+
+      return Array.from(jobNodes).map(el => ({
+        title:
+          el.querySelector('h2 span')?.innerText || 'No Title',
+
+        company:
+          el.querySelector('.companyName')?.innerText || 'N/A',
+
+        location:
+          el.querySelector('.companyLocation')?.innerText || 'N/A',
+
+        link:
+          el.querySelector('a')?.href || '#',
+
+        source: 'Indeed'
+      }));
+    });
+
+    console.log(`✅ Scraped ${jobs.length} jobs from Indeed`);
+
+    if (jobs.length > 0) {
+      await Job.insertMany(jobs);
+      console.log('✅ Indeed jobs inserted to DB');
+    }
+
+    return jobs;
+
+  } catch (error) {
+    console.error('❌ Indeed Scraping Error:', error.message);
+    return [];
+
+  } finally {
+    if (browser) {
+      await browser.close();
+    }
   }
-
-  await browser.close();
-  return jobs;
 };
 
 module.exports = scrapeIndeed;
