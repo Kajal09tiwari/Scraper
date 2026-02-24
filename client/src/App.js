@@ -10,7 +10,7 @@ function App() {
   const fetchJobs = async (site) => {
     try {
       setLoading(true);
-      const res = await axios.get(`http://localhost:5000/api/${site}`);
+      const res = await axios.get(`https://scraper-9dzw.onrender.com/api/${site}`);
       setJobs(
         Array.isArray(res.data.jobs)
           ? res.data.jobs
