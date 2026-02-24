@@ -1,67 +1,34 @@
-const puppeteer = require('puppeteer');
+const axios = require('axios');
 const Job = require('../models/Job');
 
 const scrapeRemoteOK = async () => {
-  let browser;
-
-  console.log('🚀 Starting RemoteOK scraping...');
+  console.log("🚀 Fetching RemoteOK API...");
 
   try {
-    browser = await puppeteer.launch({
-      headless: "new",
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-gpu'
-      ]
-    });
+    const response = await axios.get('https://remoteok.io/api');
 
-    const page = await browser.newPage();
+    const jobsData = response.data.slice(1); // First item is metadata
 
-    await page.setUserAgent(
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
-      '(KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
-    );
+    const jobs = jobsData.map(job => ({
+      title: job.position || 'N/A',
+      company: job.company || 'N/A',
+      location: job.location || 'Remote',
+      link: job.url || '#',
+      source: 'RemoteOK'
+    }));
 
-    await page.goto('https://remoteok.io/remote-dev-jobs', {
-      waitUntil: 'domcontentloaded',
-      timeout: 60000
-    });
-
-    await page.waitForSelector('tr.job', { timeout: 20000 });
-
-    const jobs = await page.evaluate(() => {
-      const jobRows = document.querySelectorAll('tr.job');
-
-      return Array.from(jobRows).map(row => ({
-        title: row.querySelector('td.position h2')?.innerText.trim() || 'N/A',
-        company: row.querySelector('td.company h3')?.innerText.trim() || 'N/A',
-        location: row.querySelector('.location')?.innerText.trim() || 'Remote',
-        link: row.getAttribute('data-href')
-          ? 'https://remoteok.io' + row.getAttribute('data-href')
-          : '#',
-        source: 'RemoteOK'
-      }));
-    });
-
-    console.log(`✅ Scraped ${jobs.length} jobs from RemoteOK`);
+    console.log(`✅ Fetched ${jobs.length} jobs from API`);
 
     if (jobs.length > 0) {
       await Job.insertMany(jobs);
-      console.log('✅ Jobs inserted to DB');
+      console.log("✅ Jobs inserted to DB");
     }
 
     return jobs;
 
-  } catch (err) {
-    console.error('❌ Error scraping RemoteOK:', err.message);
+  } catch (error) {
+    console.error("❌ RemoteOK API Error:", error.message);
     return [];
-
-  } finally {
-    if (browser) {
-      await browser.close();
-    }
   }
 };
 
