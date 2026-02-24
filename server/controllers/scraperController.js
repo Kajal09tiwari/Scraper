@@ -1,7 +1,7 @@
-const scrapeRemoteOK = require('../scrapers/scrapeRemoteOK');
-const scrapeNaukri = require('../scrapers/scrapeNaukri');
-const scrapeIndeed = require('../scrapers/scrapeIndeed');
-const scrapeApna = require('../scrapers/scrapeApna');
+const scrapeRemoteOK = require('../scrapers/remoteOKScraper');
+const scrapeNaukri = require('../scrapers/naukriScraper');
+const scrapeIndeed = require('../scrapers/indeedScraper');
+const scrapeApna = require('../scrapers/apnaScraper');
 
 exports.scrapeRemoteOKJobs = async (req, res) => {
   try {
