@@ -1,17 +1,12 @@
-const axios = require('axios');
 const cheerio = require('cheerio');
+const fetchWithRetries = require('../utils/fetchWithRetries');
 const Job = require('../models/Job');
 
 const scrapeIndeed = async () => {
   console.log('🚀 Starting Indeed scraping...');
 
   try {
-    const response = await axios.get('https://in.indeed.com/jobs?q=software+developer', {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
-      },
-      timeout: 15000
-    });
+    const response = await fetchWithRetries('https://in.indeed.com/jobs?q=software+developer');
 
     const $ = cheerio.load(response.data);
     const jobs = [];

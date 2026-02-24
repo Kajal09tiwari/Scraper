@@ -1,17 +1,12 @@
-const axios = require('axios');
 const cheerio = require('cheerio');
+const fetchWithRetries = require('../utils/fetchWithRetries');
 const Job = require('../models/Job');
 
 const scrapeApna = async () => {
   console.log('🚀 Starting Apna scraping...');
 
   try {
-    const response = await axios.get('https://apna.co/jobs/software-developer-jobs', {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
-      },
-      timeout: 15000
-    });
+    const response = await fetchWithRetries('https://apna.co/jobs/software-developer-jobs');
 
     const $ = cheerio.load(response.data);
     const jobs = [];

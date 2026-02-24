@@ -1,17 +1,12 @@
-const axios = require('axios');
 const cheerio = require('cheerio');
+const fetchWithRetries = require('../utils/fetchWithRetries');
 const Job = require('../models/Job');
 
 const scrapeRemoteOK = async () => {
   try {
     console.log('🚀 Starting RemoteOK scraping...');
     
-    const response = await axios.get('https://remoteok.io/remote-dev-jobs', {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-      },
-      timeout: 15000
-    });
+    const response = await fetchWithRetries('https://remoteok.io/remote-dev-jobs');
 
     const $ = cheerio.load(response.data);
     const jobs = [];
