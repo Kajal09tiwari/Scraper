@@ -5,13 +5,15 @@ const scrapeRemoteOK = async () => {
   try {
     console.log("🚀 Fetching RemoteOK API...");
 
-    const response = await axios.get("https://remoteok.com/api", {
-      headers: {
-        "User-Agent": "Mozilla/5.0",
-      },
-    });
-
-    // First element metadata hota hai, remove it
+    const response = await axios.get(
+      "https://remoteok.com/remote-dev-jobs.json",
+      {
+        headers: {
+          "User-Agent": "Mozilla/5.0",
+          "Accept": "application/json"
+        },
+      }
+    );
     const jobsData = response.data.slice(1);
 
     const jobs = jobsData.map((job) => ({
