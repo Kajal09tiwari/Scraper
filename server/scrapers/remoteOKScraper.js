@@ -1,8 +1,5 @@
-const puppeteer = require('puppeteer-extra');
-const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+const puppeteer = require('puppeteer');
 const Job = require('../models/Job');
-
-puppeteer.use(StealthPlugin());
 
 const scrapeRemoteOK = async () => {
   let browser;
@@ -38,10 +35,12 @@ const scrapeRemoteOK = async () => {
       const jobRows = document.querySelectorAll('tr.job');
 
       return Array.from(jobRows).map(row => ({
-        title: row.querySelector('td.position h2')?.innerText || 'N/A',
-        company: row.querySelector('td.company h3')?.innerText || 'N/A',
-        location: row.querySelector('.location')?.innerText || 'Remote',
-        link: 'https://remoteok.io' + (row.getAttribute('data-href') || ''),
+        title: row.querySelector('td.position h2')?.innerText.trim() || 'N/A',
+        company: row.querySelector('td.company h3')?.innerText.trim() || 'N/A',
+        location: row.querySelector('.location')?.innerText.trim() || 'Remote',
+        link: row.getAttribute('data-href')
+          ? 'https://remoteok.io' + row.getAttribute('data-href')
+          : '#',
         source: 'RemoteOK'
       }));
     });
