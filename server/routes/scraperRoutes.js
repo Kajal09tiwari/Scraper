@@ -10,5 +10,5 @@ router.get('/naukri', scraperController.scrapeNaukriJobs);
 router.get('/remoteok', scraperController.scrapeRemoteOKJobs);
 router.get('/indeed', scraperController.scrapeIndeedJobs);
 router.get('/apna', scraperController.scrapeApnaJobs);
-
+router.get("/jobs", scraperController.getAllJobs);
 module.exports = router;

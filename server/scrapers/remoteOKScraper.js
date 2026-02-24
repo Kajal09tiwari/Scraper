@@ -5,15 +5,12 @@ const scrapeRemoteOK = async () => {
   try {
     console.log("🚀 Fetching RemoteOK API...");
 
-    const response = await axios.get(
-      "https://remoteok.com/remote-dev-jobs.json",
-      {
-        headers: {
-          "User-Agent": "Mozilla/5.0",
-          "Accept": "application/json"
-        },
-      }
-    );
+    const response = await axios.get("https://remoteok.com/api", {
+      headers: {
+        "User-Agent": "Mozilla/5.0",
+      },
+    });
+
     const jobsData = response.data.slice(1);
 
     const jobs = jobsData.map((job) => ({
@@ -24,19 +21,17 @@ const scrapeRemoteOK = async () => {
       source: "RemoteOK",
     }));
 
-    console.log(`✅ Fetched ${jobs.length} jobs`);
-    console.log("Response length:", response.data.length);
-    console.log("First job:", response.data[0]);
-    
-    
+    // ❗ Purane RemoteOK jobs delete kar do (duplicate avoid)
+    // await Job.deleteMany({ source: "RemoteOK" });
+
     if (jobs.length > 0) {
       await Job.insertMany(jobs);
     }
 
-    return jobs;
+    console.log(`✅ Saved ${jobs.length} jobs to DB`);
+
   } catch (err) {
     console.error("❌ RemoteOK API Error:", err.message);
-    return [];
   }
 };
 
