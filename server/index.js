@@ -17,7 +17,7 @@ connectDB();
 // =============================
 app.use(
   cors({
-    origin: "https://scraper-one-omega.vercel.app/",
+    origin: "https://scraper-one-omega.vercel.app",
   })
 );app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

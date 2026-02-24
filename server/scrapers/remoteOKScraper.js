@@ -1,32 +1,36 @@
-const cheerio = require('cheerio');
-const fetchWithRetries = require('../utils/fetchWithRetries');
-const Job = require('../models/Job');
+const axios = require("axios");
+const Job = require("../models/Job");
 
 const scrapeRemoteOK = async () => {
   try {
-    console.log('🚀 Starting RemoteOK scraping...');
-    
-    const response = await fetchWithRetries('https://remoteok.io/remote-dev-jobs');
+    console.log("🚀 Fetching RemoteOK API...");
 
-    const $ = cheerio.load(response.data);
-    const jobs = [];
-
-    $('tr.job').each((_, elem) => {
-      jobs.push({
-        title: $(elem).find('td.position h2').text().trim() || 'N/A',
-        company: $(elem).find('td.company h3').text().trim() || 'N/A',
-        location: $(elem).find('.location').text().trim() || 'Remote',
-        link: 'https://remoteok.io' + ($(elem).attr('data-href') || ''),
-        source: 'RemoteOK'
-      });
+    const response = await axios.get("https://remoteok.com/api", {
+      headers: {
+        "User-Agent": "Mozilla/5.0",
+      },
     });
 
-    console.log(`✅ Scraped ${jobs.length} jobs`);
-    if (jobs.length > 0) await Job.insertMany(jobs);
-    
+    // First element metadata hota hai, remove it
+    const jobsData = response.data.slice(1);
+
+    const jobs = jobsData.map((job) => ({
+      title: job.position || "N/A",
+      company: job.company || "N/A",
+      location: job.location || "Remote",
+      link: job.url || "",
+      source: "RemoteOK",
+    }));
+
+    console.log(`✅ Fetched ${jobs.length} jobs`);
+
+    if (jobs.length > 0) {
+      await Job.insertMany(jobs);
+    }
+
     return jobs;
   } catch (err) {
-    console.error('❌ RemoteOK Error:', err.message);
+    console.error("❌ RemoteOK API Error:", err.message);
     return [];
   }
 };
