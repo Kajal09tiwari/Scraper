@@ -17,7 +17,19 @@ connectDB();
 // =============================
 app.use(
   cors({
-    origin: "https://scraper-one-omega.vercel.app",
+    origin: function (origin, callback) {
+      // Allow if no origin (mobile apps, curl requests)
+      if (!origin) return callback(null, true);
+      
+      // Allow localhost for development
+      if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+        return callback(null, true);
+      }
+      
+      // Allow all origins on production (Render, Vercel)
+      callback(null, true);
+    },
+    credentials: true,
   })
 );app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

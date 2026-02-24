@@ -7,10 +7,13 @@ function App() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // Use environment variable for API URL
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
   const fetchJobs = async (site) => {
     try {
       setLoading(true);
-      const res = await axios.get(`https://scraper-9dzw.onrender.com/api/${site}`);
+      const res = await axios.get(`${API_URL}/api/${site}`);
       setJobs(
         Array.isArray(res.data.jobs)
           ? res.data.jobs
